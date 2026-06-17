@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  self-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: grade classifier self-test
+        run: python3 skills/smoke-alarm/tests/test_grade.py
+
+      - name: provenance scanner self-test
+        run: python3 skills/smoke-alarm/tests/test_provenance.py
+
+      - name: mutation parser self-test
+        run: python3 skills/smoke-alarm/tests/test_mutate.py
+
+      # Dogfood: the gate must run cleanly. Fixtures are intentionally weak (they are
+      # test data, not the project's tests), so we point the gate at nothing changed
+      # and only exercise its plumbing + the ratchet against any committed baseline.
+      - name: gate plumbing
+        run: python3 skills/smoke-alarm/scripts/gate.py --no-ratchet
