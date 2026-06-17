@@ -1,0 +1,47 @@
+# --- smoke-alarm runtime ---
+.smoke-alarm/
+
+# --- Python (grade.py / mutate.py) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# --- Node / TS (stryker, tooling) ---
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+.stryker-tmp/
+reports/mutation/
+
+# --- Rust (cargo-mutants) ---
+target/
+**/*.rs.bk
+mutants.out/
+mutants.out.old/
+
+# --- Go (gremlins / go-mutesting) ---
+*.test
+*.out
+gremlins.report.*
+
+# --- editors / OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# --- logs / scratch ---
+*.log
+tmp/
+scratch/
