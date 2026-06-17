@@ -68,9 +68,26 @@ cd smoke-alarm
 ./install.sh uninstall  # remove it everywhere
 ```
 
-Restart your tool session afterward so it reloads the skill list. The skill
-auto-triggers when a test file is written or edited; run `/smoke-alarm audit` for an
-existing suite.
+Restart your tool session afterward so it reloads the skill + hook.
+
+### It runs internally — you don't
+
+`install.sh` registers a **PostToolUse hook** in `~/.claude/settings.json` and
+`~/.codex/hooks.json` (merged safely — your other settings and hooks are untouched).
+The moment the agent writes or edits a test file, the hook auto-grades it and, if it
+finds test theater, feeds the verdict straight back to the agent:
+
+```
+smoke-alarm: test_user.py has 2 weak oracle(s) — test theater that passes
+without verifying behaviour:
+  [W4] test_login — mock / call-verification only
+  [W1] test_logout — no assertion present
+Rewrite each to assert a concrete value, error, or type (>= S1)...
+```
+
+The agent then fixes its own test before moving on. No human runs a script. The manual
+commands below still exist for audits, CI, and digging in — but the day-to-day path is
+automatic. (`/smoke-alarm audit` for an existing suite.)
 
 ## Use the instruments directly
 

@@ -7,6 +7,12 @@ interfaces may still change.
 ## [Unreleased]
 
 ### Added
+- **Auto-grade hook (runs internally)** (`hooks/posttooluse.py` + `hooks/register_hooks.py`):
+  a PostToolUse hook the installer merges into `~/.claude/settings.json` and
+  `~/.codex/hooks.json`. When the agent writes/edits a test file it is graded
+  automatically and the verdict is fed back, so the agent self-corrects without a human
+  running anything. Merge is safe (preserves existing config) and idempotent;
+  `install.sh uninstall` deregisters it.
 - **Pillar 1 — static grade** (`grade.py`): classifies test units into the oracle
   taxonomy W1–S3; data-driven per-language patterns (Rust, Go, TS/JS, Python);
   `--audit`, `--gate`, `--json`. Self-test reproduces all fixture labels (20/20).

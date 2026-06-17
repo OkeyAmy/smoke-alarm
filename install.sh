@@ -56,10 +56,17 @@ do_install() {
   done
   [ "$installed" -gt 0 ] || { c_red "no known tool skill roots found."; exit 1; }
   echo
-  c_grn "done. restart your tool session so it reloads the skill list."
+  c_dim "registering auto-grade hook (so the agent checks its own tests, no manual run)..."
+  python3 "$SRC/hooks/register_hooks.py" install || c_red "hook registration failed (skill still works manually)"
+  echo
+  c_grn "done. restart your tool session so it reloads the skill + hook."
 }
 
 do_uninstall() {
+  # deregister the hook first, while the script is still on disk
+  if command -v python3 >/dev/null 2>&1 && [ -f "$SRC/hooks/register_hooks.py" ]; then
+    python3 "$SRC/hooks/register_hooks.py" uninstall || true
+  fi
   local removed=0
   for root in "${TOOL_ROOTS[@]}"; do
     if [ -d "$root/$SKILL" ]; then
@@ -83,6 +90,15 @@ do_doctor() {
       fi
     fi
   done
+  echo; c_dim "auto-grade hook status:"
+  for cfg in "$HOME/.claude/settings.json" "$HOME/.codex/hooks.json"; do
+    if [ -f "$cfg" ] && grep -q "smoke-alarm/hooks/posttooluse.py" "$cfg" 2>/dev/null; then
+      c_grn "  hook registered in $cfg"
+    elif [ -f "$cfg" ]; then
+      c_dim "  hook NOT registered in $cfg (run ./install.sh)"
+    fi
+  done
+
   if command -v python3 >/dev/null 2>&1; then
     echo; c_dim "running instrument self-tests..."
     if python3 "$SRC/tests/test_grade.py" >/dev/null 2>&1 \
