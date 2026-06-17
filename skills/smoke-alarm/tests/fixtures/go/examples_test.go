@@ -15,6 +15,12 @@ func TestValueEquality_Expect_S1(t *testing.T) {
 	}
 }
 
+func TestValueEqualityTrailingComment_Expect_S1(t *testing.T) {
+	if got := add(2, 3); got != 5 { // regression: a trailing comment must not hide the oracle
+		t.Fatalf("got %d", got)
+	}
+}
+
 func TestErrorCheck_Expect_S2(t *testing.T) {
 	err := errors.New("boom")
 	if !errors.Is(err, err) {

@@ -9,8 +9,8 @@ unit_pattern = '^func\s+(Test\w+)\s*\('
 desc = "value equality or comparison"
 patterns = [
   'assert\.Equal\(', 'require\.Equal\(', 'assert\.EqualValues\(',
-  'if\s+(?![^\n]*\bnil\b)[^\n]*!=[^\n]*\{\s*$',
-  'if\s+(?![^\n]*\bnil\b)[^\n]*==[^\n]*\{\s*$',
+  'if\s+(?![^\n]*\bnil\b)[^\n]*!=[^\n]*\{\s*(?://.*)?$',
+  'if\s+(?![^\n]*\bnil\b)[^\n]*==[^\n]*\{\s*(?://.*)?$',
   'reflect\.DeepEqual\(', 'cmp\.Diff\(', 'assert\.NotEqual\(',
 ]
 

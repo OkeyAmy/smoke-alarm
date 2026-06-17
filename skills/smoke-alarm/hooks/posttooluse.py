@@ -55,6 +55,16 @@ def main() -> int:
     if not path.exists():
         return 0
 
+    # Skip intentional sample/data files — they are deliberately weak by design.
+    posix = path.as_posix().lower()
+    if any(part in posix for part in ("/fixtures/", "/testdata/", "/__fixtures__/")):
+        return 0
+    try:
+        if "smoke-alarm: ignore" in path.read_text(encoding="utf-8", errors="replace"):
+            return 0  # explicit opt-out marker in the file
+    except OSError:
+        return 0
+
     try:
         fv = grade.grade_file(path)
     except Exception as exc:  # a real test file we could not grade -> fail closed
