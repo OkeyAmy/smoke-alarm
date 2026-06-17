@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="mutmut" tests="4" failures="1" errors="1">
+    <testcase classname="calc" name="calc.add:12" time="0.10"/>
+    <testcase classname="calc" name="calc.add:18" time="0.09"/>
+    <testcase classname="calc" name="calc.is_even:25" time="0.11">
+      <failure message="Survived">mutant survived: tests still passed</failure>
+    </testcase>
+    <testcase classname="calc" name="calc.parse:31" time="0.00">
+      <error message="check was not run">skipped</error>
+    </testcase>
+  </testsuite>
+</testsuites>

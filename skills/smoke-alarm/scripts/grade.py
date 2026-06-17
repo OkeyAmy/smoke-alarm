@@ -111,22 +111,30 @@ def load_patterns(lang: str) -> PatternSet:
                       descs=descs, unit_guard=unit_guard)
 
 
-def split_units(source: str, ps: PatternSet) -> list[tuple[str, str]]:
-    """Return [(unit_name, unit_body)] by slicing between unit-start matches."""
+def unit_spans(source: str, ps: PatternSet) -> list[tuple[str, int, int, int]]:
+    """Return [(name, decl_start, body_start, end)] for each test unit.
+
+    decl_start..end covers the whole unit (declaration + body); body_start..end is
+    the body alone. Spanning to the next unit's declaration, not just the body, lets
+    callers strip an entire unit from the source.
+    """
     starts = list(ps.unit_pattern.finditer(source))
-    if not starts:
-        return []
-    units: list[tuple[str, str]] = []
+    spans: list[tuple[str, int, int, int]] = []
     for i, m in enumerate(starts):
         if ps.unit_guard is not None:
             window = source[max(0, m.start() - ps.GUARD_LOOKBACK):m.start()]
             if not ps.unit_guard.search(window):
                 continue  # e.g. a Rust fn without a #[test] attribute
         name = m.group(1) if m.groups() else m.group(0).strip()
-        body_start = m.end()
-        body_end = starts[i + 1].start() if i + 1 < len(starts) else len(source)
-        units.append((name, source[body_start:body_end]))
-    return units
+        end = starts[i + 1].start() if i + 1 < len(starts) else len(source)
+        spans.append((name, m.start(), m.end(), end))
+    return spans
+
+
+def split_units(source: str, ps: PatternSet) -> list[tuple[str, str]]:
+    """Return [(unit_name, unit_body)] by slicing between unit-start matches."""
+    return [(name, source[body_start:end])
+            for name, _decl, body_start, end in unit_spans(source, ps)]
 
 
 def classify_unit(name: str, body: str, ps: PatternSet) -> UnitVerdict:

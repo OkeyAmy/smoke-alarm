@@ -1,0 +1,21 @@
+{
+  "outcomes": [
+    { "scenario": "Baseline", "summary": "Success" },
+    {
+      "scenario": { "Mutant": { "file": "src/lib.rs", "line": 12, "function": "add", "describe": "replace + with - in add" } },
+      "summary": "CaughtMutant"
+    },
+    {
+      "scenario": { "Mutant": { "file": "src/lib.rs", "line": 18, "function": "add", "describe": "replace + with * in add" } },
+      "summary": "CaughtMutant"
+    },
+    {
+      "scenario": { "Mutant": { "file": "src/lib.rs", "line": 25, "function": "is_even", "describe": "replace is_even -> true" } },
+      "summary": "MissedMutant"
+    },
+    {
+      "scenario": { "Mutant": { "file": "src/lib.rs", "line": 31, "function": "parse", "describe": "replace parse -> Ok(Default::default())" } },
+      "summary": "Unviable"
+    }
+  ]
+}

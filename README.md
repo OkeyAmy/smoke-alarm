@@ -80,6 +80,11 @@ python3 skills/smoke-alarm/tests/test_grade.py
 # -> 20/20 labeled units classified correctly
 ```
 
+This proves the patterns *fire* on labeled fixtures. It is **not** an accuracy
+benchmark — `grade.py`'s precision/recall on real-world code is not yet measured (see
+`docs/2026-06-17-honest-audit.md`). The κ=0.77 figure in the paper describes the
+paper's classifier, not this one.
+
 Adding a language is data-only: drop a `scripts/patterns/<lang>.toml` and labeled
 fixtures — no code change.
 

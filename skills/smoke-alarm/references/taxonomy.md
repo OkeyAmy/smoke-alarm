@@ -17,10 +17,13 @@ one, a test executes code but never verifies it is correct.
 | **S2** | strong | Error, containment, or type checks | alarm |
 | **S3** | strong | Two or more distinct strong types | alarm |
 
-The paper's classifier reached Cohen's κ = 0.77 against two human coders and matched
-human labels on **86.7%** of a 384-patch stratified sample (95% confidence, 5%
-margin). `grade.py` reproduces this taxonomy; `tests/test_grade.py` checks it against
-real labeled fixtures.
+The *paper's* classifier reached Cohen's κ = 0.77 against two human coders and matched
+human labels on **86.7%** of a 384-patch stratified sample. That number describes the
+paper's implementation, **not this one**. `grade.py` implements the same taxonomy, but
+its accuracy on real-world code has **not been benchmarked** — the current
+`tests/fixtures/` only prove the patterns fire on a handful of labeled examples per
+language. Measuring precision/recall on a real corpus is tracked in the audit
+(`docs/2026-06-17-honest-audit.md`).
 
 ## Why weak categories are "smoke"
 
