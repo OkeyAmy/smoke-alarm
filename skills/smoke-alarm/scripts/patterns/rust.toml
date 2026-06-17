@@ -1,0 +1,48 @@
+# Oracle-signal patterns for Rust (built-in test harness).
+# Taxonomy from Banik et al. 2026, Table I.
+
+lang = "rust"
+
+unit_pattern = '^[ \t]*(?:async[ \t]+)?fn[ \t]+(\w+)'
+# A fn only counts as a test unit if a test attribute precedes it.
+unit_guard = '#\[(?:test|tokio::test|async_std::test|rstest)'
+
+[signals.S1]
+desc = "value equality or comparison"
+patterns = [
+  'assert_eq!\s*\(', 'assert_ne!\s*\(',
+  'assert!\s*\([^\n]*==', 'assert!\s*\([^\n]*<', 'assert!\s*\([^\n]*>',
+  'pretty_assertions::assert_eq', 'similar_asserts::assert_eq',
+]
+
+[signals.S2]
+desc = "error, containment, or type checks"
+patterns = [
+  '\.is_err\(\)', '\.is_ok\(\)', '\.unwrap_err\(\)',
+  'assert!\s*\([^\n]*\.contains\(', 'matches!\s*\(', '#\[should_panic',
+  'assert!\s*\([^\n]*\.is_err', 'assert!\s*\([^\n]*\.is_ok',
+]
+
+[signals.W2]
+desc = "existence / non-null checks only"
+patterns = [
+  'assert!\s*\([^\n]*\.is_some\(\)', 'assert!\s*\([^\n]*\.is_none\(\)',
+]
+
+[signals.W3]
+desc = "boolean asserts only (no value compared)"
+patterns = [
+  'assert!\s*\(\s*\w+\s*\)', 'assert!\s*\(\s*true\s*\)', 'assert!\s*\(\s*false\s*\)',
+]
+
+[signals.W4]
+desc = "mock / call-verification only"
+patterns = [
+  '\.checkpoint\(\)', 'mockall::', '\.expect_\w+\(\)',
+]
+
+[signals.W5]
+desc = "snapshot match only"
+patterns = [
+  'insta::assert_', 'assert_snapshot!\s*\(', 'assert_debug_snapshot!\s*\(',
+]

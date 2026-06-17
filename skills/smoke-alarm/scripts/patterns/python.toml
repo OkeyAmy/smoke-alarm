@@ -1,0 +1,51 @@
+# Oracle-signal patterns for Python (pytest / unittest).
+# Taxonomy from Banik et al. 2026, Table I. Regex are matched against a test
+# unit's body. Highest signal wins (S3 > S2 > S1 > W5 > W4 > W3 > W2 > W1).
+
+lang = "python"
+
+# How to find the start of a test unit.
+unit_pattern = '^[ \t]*(?:async[ \t]+)?def[ \t]+(test_\w+)'
+
+[signals.S1]
+desc = "value equality or comparison"
+patterns = [
+  'assertEqual\b', 'assertNotEqual\b', 'assertAlmostEqual\b',
+  'assertGreater\b', 'assertLess\b', 'assertGreaterEqual\b', 'assertLessEqual\b',
+  'assert\s+[^\n]*==', 'assert\s+[^\n]*<', 'assert\s+[^\n]*>',
+  'assert_frame_equal\b', 'assert_array_equal\b', 'assert_called_with\b',
+]
+
+[signals.S2]
+desc = "error, containment, or type checks"
+patterns = [
+  'assertRaises\b', 'pytest\.raises\b', 'assertIsInstance\b',
+  'assertIn\b', 'assertNotIn\b', 'assert\s+[^\n]*\bin\b',
+  'with\s+pytest\.raises', 'xfail\b', 'assertRaisesRegex\b',
+]
+
+[signals.W2]
+desc = "existence / non-null checks only"
+patterns = [
+  'assertIsNotNone\b', 'assertIsNone\b', 'assert\s+\w+\s+is\s+not\s+None',
+  'assert\s+\w+\s+is\s+None',
+]
+
+[signals.W3]
+desc = "boolean asserts only (no value compared)"
+patterns = [
+  'assertTrue\b', 'assertFalse\b', 'assert\s+\w+\s*$', 'assert\s+\w+\s*#',
+]
+
+[signals.W4]
+desc = "mock / call-verification only"
+patterns = [
+  'assert_called\b', 'assert_called_once\b', 'assert_not_called\b',
+  'assert_any_call\b', 'mock_calls\b', 'call_count\b',
+]
+
+[signals.W5]
+desc = "snapshot match only"
+patterns = [
+  'snapshot\b', 'assert\s+[^\n]*==\s*snapshot', 'syrupy\b',
+]

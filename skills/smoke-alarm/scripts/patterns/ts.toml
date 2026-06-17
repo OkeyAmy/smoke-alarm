@@ -1,0 +1,48 @@
+# Oracle-signal patterns for TypeScript / JavaScript (Jest / Vitest).
+# Taxonomy from Banik et al. 2026, Table I.
+
+lang = "ts"
+
+unit_pattern = '^[ \t]*(?:it|test)\s*\(\s*[`"\047]([^`"\047]+)'
+
+[signals.S1]
+desc = "value equality or comparison"
+patterns = [
+  '\.toBe\(', '\.toEqual\(', '\.toStrictEqual\(', '\.toBeCloseTo\(',
+  '\.toBeGreaterThan\(', '\.toBeLessThan\(', '\.toBeGreaterThanOrEqual\(',
+  '\.toBeLessThanOrEqual\(', '\.toMatch\(', '\.toMatchObject\(',
+]
+
+[signals.S2]
+desc = "error, containment, or type checks"
+patterns = [
+  '\.toThrow\(', '\.toThrowError\(', '\.rejects\b', '\.toContain\(',
+  '\.toContainEqual\(', '\.toBeInstanceOf\(', '\.toHaveProperty\(',
+  'expect\(\)\.rejects', '\.toBeTypeOf\(',
+]
+
+[signals.W2]
+desc = "existence / non-null checks only"
+patterns = [
+  '\.toBeDefined\(', '\.toBeUndefined\(', '\.toBeNull\(', '\.not\.toBeNull\(',
+  '\.toBeTruthy\(', '\.toBeFalsy\(',
+]
+
+[signals.W3]
+desc = "boolean asserts only (no value compared)"
+patterns = [
+  '\.toBe\(true\)', '\.toBe\(false\)', 'assert\(\w+\)',
+]
+
+[signals.W4]
+desc = "mock / call-verification only"
+patterns = [
+  '\.toHaveBeenCalled\(', '\.toHaveBeenCalledTimes\(', '\.toHaveBeenCalledWith\(',
+  '\.toBeCalled\(', 'expect\(\w*[Mm]ock', '\.mock\.calls\b',
+]
+
+[signals.W5]
+desc = "snapshot match only"
+patterns = [
+  '\.toMatchSnapshot\(', '\.toMatchInlineSnapshot\(',
+]

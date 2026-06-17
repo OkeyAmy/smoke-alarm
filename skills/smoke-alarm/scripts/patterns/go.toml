@@ -1,0 +1,49 @@
+# Oracle-signal patterns for Go (testing / testify).
+# Taxonomy from Banik et al. 2026, Table I.
+
+lang = "go"
+
+unit_pattern = '^func\s+(Test\w+)\s*\('
+
+[signals.S1]
+desc = "value equality or comparison"
+patterns = [
+  'assert\.Equal\(', 'require\.Equal\(', 'assert\.EqualValues\(',
+  'if\s+(?![^\n]*\bnil\b)[^\n]*!=[^\n]*\{\s*$',
+  'if\s+(?![^\n]*\bnil\b)[^\n]*==[^\n]*\{\s*$',
+  'reflect\.DeepEqual\(', 'cmp\.Diff\(', 'assert\.NotEqual\(',
+]
+
+[signals.S2]
+desc = "error, containment, or type checks"
+patterns = [
+  'assert\.Error\(', 'require\.Error\(', 'assert\.NoError\(', 'require\.NoError\(',
+  'errors\.Is\(', 'errors\.As\(', 'assert\.Contains\(', 'assert\.ErrorContains\(',
+  'assert\.IsType\(', 'assert\.ErrorIs\(',
+]
+
+[signals.W2]
+desc = "existence / non-null checks only"
+patterns = [
+  'assert\.Nil\(', 'assert\.NotNil\(', 'require\.NotNil\(',
+  'if\s+\w+\s*==\s*nil', 'if\s+\w+\s*!=\s*nil',
+]
+
+[signals.W3]
+desc = "boolean asserts only (no value compared)"
+patterns = [
+  'assert\.True\(', 'assert\.False\(', 'require\.True\(',
+]
+
+[signals.W4]
+desc = "mock / call-verification only"
+patterns = [
+  '\.AssertCalled\(', '\.AssertExpectations\(', '\.AssertNumberOfCalls\(',
+  'mock\.On\(',
+]
+
+[signals.W5]
+desc = "snapshot match only"
+patterns = [
+  'cupaloy\.', 'snaps\.MatchSnapshot\(', 'goldie\.Assert\(',
+]
