@@ -26,7 +26,10 @@ statement and cross-examines it before letting it walk. Calm, direct, evidence-d
 No theatrics — the evidence does the talking. A test is a real **alarm** only when it
 survives interrogation. Otherwise it is **smoke**, and you fix it.
 
-`SA_DIR` below = this skill's directory.
+**Running the instruments.** After install there is a `smoke-alarm` command on your PATH
+— use it from inside any project: `smoke-alarm grade <file>`, `smoke-alarm audit <dir>`,
+etc. If it is not on PATH, fall back to `python3 SA_DIR/scripts/<name>.py` where `SA_DIR`
+is this skill's directory. The commands below show both.
 
 ## The loop (every test you write)
 
@@ -45,7 +48,7 @@ feel.
 1. **"Does this test actually check anything, or just run the code?"**
    Instrument — static grade:
    ```
-   python3 SA_DIR/scripts/grade.py <test-file>
+   smoke-alarm grade <test-file>          # or: python3 SA_DIR/scripts/grade.py <test-file>
    ```
    Anything graded W1–W5 is smoke (no assertion, existence-only, boolean-only,
    mock-only, snapshot-only). Rewrite until it is S1 or stronger. See
@@ -54,7 +57,7 @@ feel.
 2. **"If the code were wrong, would this test fail?"**
    Instrument — mutation (the real verdict):
    ```
-   python3 SA_DIR/scripts/mutate.py <source-dir-or-file>
+   smoke-alarm mutate <source-dir-or-file>   # or: python3 SA_DIR/scripts/mutate.py <...>
    ```
    A surviving mutant is a bug the suite did not notice — those tests are smoke even if
    they assert. Strengthen them and re-run. If the mutation tool is missing, install it
@@ -63,7 +66,7 @@ feel.
 3. **"Where did my expected value come from — intent, or the code's own output?"**
    This is the question you will be tempted to skip. Do not. Instrument — provenance:
    ```
-   python3 SA_DIR/scripts/provenance.py <test-file> --source <impl-dir>
+   smoke-alarm provenance <test-file> --source <impl-dir>   # or python3 SA_DIR/scripts/provenance.py <...>
    ```
    If the expected value is what the code returned (record-actual), a literal copied
    from the implementation, a snapshot you never read, or two computed values compared
@@ -109,7 +112,7 @@ When the codebase already has tests, you are the detective walking into a room f
 suspect statements.
 
 ```
-python3 SA_DIR/scripts/audit.py <repo-or-tests-dir> --source <src-dir>
+smoke-alarm audit <repo-or-tests-dir> --source <src-dir>   # or python3 SA_DIR/scripts/audit.py <...>
 ```
 This grades every test, runs provenance, writes `.smoke-alarm/baseline.json`, and
 prints a worst-first plan. Then: prove the suspects with `mutate.py`, fix in batches
@@ -119,7 +122,8 @@ prints a worst-first plan. Then: prove the suspects with `mutate.py`, fix in bat
 
 Apply to **new or changed** test files only, so a legacy suite does not fail day one:
 ```
-python3 SA_DIR/scripts/grade.py --gate <changed-test-files...>
+smoke-alarm gate --base <base-ref>                   # gate new/changed test files in the diff
+smoke-alarm grade --gate <changed-test-files...>     # or gate an explicit file list
 ```
 Exit non-zero on any weak unit. Gate blocks new smoke; audit clears the old.
 

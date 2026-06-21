@@ -63,12 +63,17 @@ The loop, every time: **write → interrogate → check with instruments → smo
 ```bash
 git clone https://github.com/OkeyAmy/smoke-alarm
 cd smoke-alarm
-./install.sh            # mirror the skill into every AI tool present
+./install.sh            # CLI on PATH + skill files + auto-grade hook
 ./install.sh doctor     # verify install + run the instrument self-tests
-./install.sh uninstall  # remove it everywhere
+./install.sh uninstall  # remove everything it installed
 ```
 
 Restart your tool session afterward so it reloads the skill + hook.
+
+Install gives you three ways in, so **any agent** can use it:
+1. **`smoke-alarm` command on PATH** — works in any project, any agent: `smoke-alarm grade tests/`.
+2. **Skill files** in each AI tool's skills dir, for skill-aware agents.
+3. **PostToolUse hook** (Claude Code, Codex) — auto-grades test writes, no human trigger.
 
 ### It runs internally — you don't
 
@@ -91,16 +96,18 @@ automatic. (`/smoke-alarm audit` for an existing suite.)
 
 ## Use the instruments directly
 
-```bash
-S=skills/smoke-alarm/scripts
+With the `smoke-alarm` command on PATH (after install), from inside any project:
 
-python3 $S/grade.py path/to/test_file          # static oracle grade (W1-S3)
-python3 $S/grade.py --audit path/to/repo       # grade a whole suite
-python3 $S/provenance.py test_file --source src  # where do expected values come from?
-python3 $S/mutate.py path/to/source            # mutation: do tests die when code breaks?
-python3 $S/audit.py path/to/repo --source src  # combined sweep -> baseline + plan
-python3 $S/gate.py --base origin/main          # CI gate: block NEW weak tests only
+```bash
+smoke-alarm grade path/to/test_file            # static oracle grade (W1-S3)
+smoke-alarm grade --audit path/to/repo         # grade a whole suite
+smoke-alarm provenance test_file --source src  # where do expected values come from?
+smoke-alarm mutate path/to/source              # mutation: do tests die when code breaks?
+smoke-alarm audit path/to/repo --source src    # combined sweep -> baseline + plan
+smoke-alarm gate --base origin/main            # CI gate: block NEW weak tests only
 ```
+
+From a clone without installing, the equivalent is `python3 skills/smoke-alarm/scripts/<name>.py …`.
 
 Example grade output:
 
