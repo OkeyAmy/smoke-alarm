@@ -9,8 +9,9 @@ tool, then parses its result artifact into a structured report: surviving mutant
 Structured parsing is implemented for:
   - cargo-mutants (Rust)  -> mutants.out/outcomes.json
   - mutmut (Python)       -> `mutmut junitxml`
-stryker (TS) and gremlins (Go) currently run and forward their exit code; structured
-parsing for them is tracked in docs/2026-06-17-honest-audit.md.
+  - stryker (TS)          -> reports/mutation/mutation.json (mutation-testing-report-schema)
+gremlins (Go) currently runs and forwards its exit code; structured parsing for it is
+pending verification against a real gremlins JSON artifact (its schema is not assumed).
 
 If the mutation tool is not installed it says so and exits non-zero (fail-closed)
 rather than implying the tests are proven.
@@ -87,6 +88,28 @@ def parse_cargo_mutants(outcomes_json: str) -> MutationReport:
     return report
 
 
+def parse_stryker_json(report_json: str) -> MutationReport:
+    """Parse a Stryker report (mutation-testing-report-schema): files[*].mutants[*].status.
+
+    Killed/Timeout count as caught (Stryker treats a timeout as detected); Survived and
+    NoCoverage are mutants no test killed; CompileError/RuntimeError/Ignored are excluded
+    from the score."""
+    data = json.loads(report_json)
+    report = MutationReport(tool="stryker")
+    for fname, fobj in data.get("files", {}).items():
+        for m in fobj.get("mutants", []):
+            status = m.get("status")
+            if status in ("Killed", "Timeout"):
+                report.caught += 1
+            elif status in ("Survived", "NoCoverage"):
+                report.survived += 1
+                line = m.get("location", {}).get("start", {}).get("line", "?")
+                report.survivors.append(Survivor(f"{fname}:{line}", m.get("mutatorName", "")))
+            else:  # CompileError, RuntimeError, Ignored, Pending
+                report.skipped += 1
+    return report
+
+
 def parse_mutmut_junitxml(xml_text: str) -> MutationReport:
     """Parse the output of `mutmut junitxml`. A <failure> on a testcase means the
     mutant survived (the suite did not catch it)."""
@@ -124,7 +147,8 @@ BACKENDS: dict[str, Backend] = {
     "python": Backend("python", "mutmut", ["mutmut", "version"],
                       ["mutmut", "run"], "pip install mutmut"),
     "ts": Backend("ts", "stryker", ["npx", "stryker", "--version"],
-                  ["npx", "stryker", "run"], "pnpm add -D @stryker-mutator/core"),
+                  ["npx", "stryker", "run", "--reporters", "clear-text,json"],
+                  "pnpm add -D @stryker-mutator/core"),
     "go": Backend("go", "gremlins", ["gremlins", "--version"],
                   ["gremlins", "unleash", "./..."],
                   "go install github.com/go-gremlins/gremlins/cmd/gremlins@latest"),
@@ -168,6 +192,10 @@ def collect_report(lang: str, workdir: Path) -> MutationReport | None:
                               capture_output=True, text=True)
         if proc.returncode == 0 and proc.stdout.strip():
             return parse_mutmut_junitxml(proc.stdout)
+    elif lang == "ts":
+        artifact = workdir / "reports" / "mutation" / "mutation.json"
+        if artifact.exists():
+            return parse_stryker_json(artifact.read_text(encoding="utf-8"))
     return None
 
 

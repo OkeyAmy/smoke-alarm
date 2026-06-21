@@ -168,9 +168,10 @@ do_doctor() {
   if command -v python3 >/dev/null 2>&1; then
     echo; c_dim "running instrument self-tests..."
     if python3 "$SRC/tests/test_grade.py" >/dev/null 2>&1 \
+       && python3 "$SRC/tests/test_ast_grade.py" >/dev/null 2>&1 \
        && python3 "$SRC/tests/test_provenance.py" >/dev/null 2>&1 \
        && python3 "$SRC/tests/test_mutate.py" >/dev/null 2>&1; then
-      c_grn "self-tests pass (grade + provenance + mutate parsers)"
+      c_grn "self-tests pass (grade + AST grade + provenance + mutate parsers)"
     else
       c_red "self-tests FAILED — run them individually under $SRC/tests/"; ok=1
     fi

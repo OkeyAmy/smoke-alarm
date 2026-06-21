@@ -127,20 +127,37 @@ NOTE: static = assertion shape, not correctness. Run mutation + provenance befor
 - [Honest audit](docs/2026-06-17-honest-audit.md) — current limitations, no spin
 - [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
+## How the static grade works (by language)
+
+- **Python: AST-based.** `grade.py` routes Python to a real `ast` parser
+  (`ast_grade.py`): it splits units correctly (class methods, parametrized tests are one
+  unit) and classifies by the actual `assert` / call nodes. A helper-based assertion like
+  `assertValidUser(result)` is reported as **W6** (opaque custom assertion — present but
+  not statically verifiable), **not** the old false "W1 no assertion".
+- **TypeScript / Go / Rust: pattern tables** (`patterns/*.toml`). These get the AST
+  treatment as it lands per language.
+
+Mutation parsing (pillar 2) is structured for **cargo-mutants** (Rust), **mutmut**
+(Python), and **stryker** (TS). **gremlins** (Go) runs and forwards its exit code;
+structured parsing is pending verification against a real gremlins artifact.
+
 ## Accuracy: read this
 
 The κ=0.77 / 86.7% figure in the paper describes the *paper's* classifier, **not this
-one**. `grade.py` implements the same taxonomy but its precision/recall on real code is
-**not yet benchmarked** — the fixtures prove the patterns fire, not that they
-generalize. The static grade is deliberately *triage*; trust the verdict to mutation +
-provenance. Measuring real accuracy is open work (see the honest audit).
+one**. smoke-alarm implements the same taxonomy but its precision/recall on real code is
+**not yet benchmarked on a labeled corpus** — the fixtures and AST tests prove the
+classifier behaves correctly on known cases, not that it generalizes. The static grade is
+deliberately *triage*; trust the verdict to mutation + provenance. A labeled-corpus
+benchmark is open work (see the honest audit).
 
 ## Self-test
 
 ```bash
-python3 skills/smoke-alarm/tests/test_grade.py        # 20/20 labeled units
-python3 skills/smoke-alarm/tests/test_provenance.py   # 5/5 fixtures flagged
-python3 skills/smoke-alarm/tests/test_mutate.py       # parsers + XML guard
+S=skills/smoke-alarm/tests
+python3 $S/test_grade.py        # pattern-table classifier on labeled fixtures
+python3 $S/test_ast_grade.py    # Python AST grader (incl. former regex misses)
+python3 $S/test_provenance.py   # provenance flags
+python3 $S/test_mutate.py       # cargo-mutants + mutmut + stryker parsers + XML guard
 ```
 
 ## References

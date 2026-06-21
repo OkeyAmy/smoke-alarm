@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Self-test for the mutation result parsers.
 
-Runs the cargo-mutants and mutmut parsers against real-format tool-output samples in
-fixtures/mutation/ and checks the derived survivors and %alarm. Also checks the
-zero-dependency XML guard rejects DTD/entity declarations (XXE / billion-laughs).
+Runs the cargo-mutants, mutmut, and stryker parsers against real-format tool-output
+samples in fixtures/mutation/ and checks the derived survivors and %alarm. Also checks
+the zero-dependency XML guard rejects DTD/entity declarations (XXE / billion-laughs).
 
 Run:  python3 tests/test_mutate.py
 """
@@ -37,6 +37,16 @@ def main() -> int:
     ok &= check("cargo-mutants pct_alarm~66.7", abs(cm.pct_alarm - 66.7) < 0.5, f"got {cm.pct_alarm}")
     ok &= check("cargo-mutants survivor location", cm.survivors[0].location == "src/lib.rs:25",
                 f"got {cm.survivors[0].location}")
+
+    # stryker: Killed+Timeout=2 caught, Survived+NoCoverage=2 survived, CompileError=1
+    # skipped -> 50% alarm; survivor locations carry the file:line.
+    sk = mutate.parse_stryker_json((FIX / "stryker-mutation.json").read_text())
+    ok &= check("stryker caught=2", sk.caught == 2, f"got {sk.caught}")
+    ok &= check("stryker survived=2", sk.survived == 2, f"got {sk.survived}")
+    ok &= check("stryker skipped=1", sk.skipped == 1, f"got {sk.skipped}")
+    ok &= check("stryker pct_alarm~50", abs(sk.pct_alarm - 50.0) < 0.5, f"got {sk.pct_alarm}")
+    ok &= check("stryker survivor location", sk.survivors[0].location == "src/math.ts:2",
+                f"got {sk.survivors[0].location}")
 
     # mutmut: 2 caught, 1 survived (failure), 1 skipped (error) -> 66.7% alarm
     mm = mutate.parse_mutmut_junitxml((FIX / "mutmut-junitxml.xml").read_text())

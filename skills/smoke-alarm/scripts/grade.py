@@ -49,6 +49,7 @@ PRECEDENCE = ["S3", "S2", "S1", "W5", "W4", "W3", "W2", "W1"]
 COMPUTED_DESCS = {
     "S3": "two or more distinct strong types",
     "W1": "no assertion present",
+    "W6": "opaque custom assertion — present but not statically verifiable (confirm with mutation)",
 }
 
 # A path/name is treated as a test file only if it looks like one.
@@ -167,6 +168,11 @@ def grade_file(path: Path) -> FileVerdict | None:
     lang = EXT_TO_LANG.get(path.suffix.lower())
     if lang is None:
         return None
+    if lang == "python":
+        # Python gets a real AST grader (precise unit splitting + classification).
+        # Other languages use the pattern tables until they get the same treatment.
+        from ast_grade import grade_python_file
+        return grade_python_file(path)
     ps = load_patterns(lang)
     source = path.read_text(encoding="utf-8", errors="replace")
     units = [classify_unit(n, b, ps) for n, b in split_units(source, ps)]
